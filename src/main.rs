@@ -12,9 +12,8 @@ async fn main() {
     let url = &args[1];
 
     let mut config = Configuration::new();
-    if let Some(blacklist_url) = config.blacklist_url.as_ref() {
-        blacklist_url.push(format!("{}/licenses/", url).into());
-    }
+    config.blacklist_url.expect("blacklist_url is None")
+        .push(format!("{}/licenses/", url).into());
     config.respect_robots_txt = true;
     config.subdomains = true;
     config.tld = false;
