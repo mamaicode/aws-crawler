@@ -1,40 +1,32 @@
-use std::env;
-use std::error::Error;
-
+use spider::configuration::Configuration;
+use spider::utils::CompactString;
 use spider::website::Website;
-use tokio::runtime::Runtime;
-
-use rusoto_core::Region;
-use rusoto_s3::{PutObjectRequest, S3Client, S3};
+use spider::tokio;
+use std::env;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    // Get the URL to crawl from the command-line arguments
+async fn main() {
     let args: Vec<String> = env::args().collect();
-    let url = args.get(1).ok_or("URL not provided")?;
+    if args.len() != 2 {
+        panic!("Please provide a URL to crawl");
+    }
+    let url = &args[1];
 
-    // Create a new website instance and crawl it
-    let mut website = Website::new(url);
+    let mut config = Configuration::new();
+    config.blacklist_url.expect("blacklist_url is None")
+        .push(format!("{}/licenses/", url).into());
+    config.respect_robots_txt = true;
+    config.subdomains = true;
+    config.tld = false;
+    config.delay = 0;
+    config.request_timeout = None;
+    config.channel_buffer = 100;
+    config.user_agent = "myapp/version".to_string();
+
+    let mut website: Website = Website::with_configuration(url, config);
     website.crawl().await;
 
-    // Get the page contents as a byte array
-    let contents = website.get_html().as_bytes().to_vec();
-
-    // Initialize the S3 client
-    let s3_client = S3Client::new(Region::default());
-
-    // Prepare the request to store the contents in S3
-    let bucket_name = "my-bucket-name";
-    let object_key = format!("{}{}", url, ".html");
-    let request = PutObjectRequest {
-        bucket: bucket_name.to_string(),
-        key: object_key.to_string(),
-        body: Some(contents.into()),
-        ..Default::default()
-    };
-
-    // Send the request to S3
-    s3_client.put_object(request).await?;
-
-    Ok(())
+    for link in website.get_links() {
+        println!("- {:?}", link.as_ref());
+    }
 }
