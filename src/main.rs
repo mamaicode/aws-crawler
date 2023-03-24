@@ -1,8 +1,11 @@
 use spider::configuration::Configuration;
 use spider::website::Website;
-use spider::tokio;
 
-use std::env;
+use tokio::{fs::File, io::AsyncReadExt};
+
+use std::{env, io::Read};
+
+use aws_sdk_s3::{ByteStream, Client, Region};
 
 #[tokio::main]
 async fn main() {
@@ -27,8 +30,24 @@ async fn main() {
     let mut website: Website = Website::new(url);
     website.configuration = Box::new(config);
 
-    
+    // to fix
+    let s3_client = Client::new(Region::default());
+
+    // to fix
     for link in website.get_links() {
         println!("- {:?}", link.as_ref());
+        let mut response = reqwest::get(link.as_ref()).await?;
+        let mut body = vec![];
+        response.read_to_end(&mut body)?;
+
+        let key = format!("{}{}", website.base_url(), link);
+        let byte_stream = ByteStream::from(body);
+        let put_request = s3_client.put_object()
+            .bucket(bucket_name)
+            .key(key)
+            .body(byte_stream);
+        put_request.send().await?;
     }
+
+    Ok(())
 }
