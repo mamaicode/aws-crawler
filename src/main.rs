@@ -2,7 +2,6 @@ use std::env;
 use std::io::{self, Write};
 
 use aws_config::load_from_env;
-use aws_sdk_s3::types::SdkError;
 use aws_sdk_s3::types::ByteStream;
 use aws_sdk_s3::{Client as S3Client};
 
@@ -10,8 +9,6 @@ use spider::configuration::Configuration;
 use spider::reqwest;
 use spider::website::Website;
 
-use tokio::fs::File;
-use tokio::io::AsyncReadExt;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
