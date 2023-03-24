@@ -1,6 +1,7 @@
 use spider::configuration::Configuration;
 use spider::website::Website;
 use spider::tokio;
+
 use std::env;
 
 #[tokio::main]
@@ -22,7 +23,7 @@ async fn main() {
     config.request_timeout = None;
     config.channel_buffer = 100;
     config.user_agent = Some(Box::new("myapp/version".to_string().into()));
-    
+  
     let mut website: Website = Website::new(url);
     website.configuration = Box::new(config);
 
