@@ -1,5 +1,5 @@
 [package]
-name = "lambda_crawler"
+name = "aws_crawler"
 version = "0.1.0"
 edition = "2021"
 

@@ -452,6 +452,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "aws_crawler"
+version = "0.1.0"
+dependencies = [
+ "aws-config",
+ "aws-sdk-s3",
+ "spider",
+ "tokio",
+]
+
+[[package]]
 name = "base64"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1155,16 +1165,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "445dde2150c55e483f3d8416706b97ec8e8237c307e5b7b4b8dd15e6af2a0730"
 dependencies = [
  "wasm-bindgen",
-]
-
-[[package]]
-name = "lambda_crawler"
-version = "0.1.0"
-dependencies = [
- "aws-config",
- "aws-sdk-s3",
- "spider",
- "tokio",
 ]
 
 [[package]]
