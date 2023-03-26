@@ -56,6 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let s3_client = S3Client::new(&sdk_config);
     create_s3_bucket(&s3_client, bucket_name, region).await?;
 
+    let mut tasks = Vec::new();
     for link in website.get_links() {
         println!("- {:?}", link.as_ref());
         let response = reqwest::get(link.as_ref()).await?;
@@ -68,7 +69,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .bucket(&*bucket_name.trim())
             .key(&key)
             .body(byte_stream);
-        put_request.send().await?;
+        let task = tokio::spawn(async move {
+            put_request.send().await?;
+            Result::<(), Box<dyn std::error::Error>>::Ok(())
+        });
+        tasks.push(task);
+    }
+
+    for task in tasks {
+        task.await?;
     }
 
     Ok(())
