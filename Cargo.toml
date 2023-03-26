@@ -7,7 +7,6 @@ edition = "2021"
 
 [dependencies]
 aws-config = "0.54.1"
-aws-sdk-dynamodb = "0.24.0"
 aws-sdk-s3 = "0.24.0"
 spider = "1.26.2"
 tokio = { version = "1", features = ["full"] }
