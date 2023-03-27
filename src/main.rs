@@ -1,15 +1,19 @@
 use std::env;
 
 use aws_config::load_from_env;
+use aws_sdk_s3::model::{BucketLocationConstraint, CreateBucketConfiguration};
 use aws_sdk_s3::types::ByteStream;
 use aws_sdk_s3::Client as S3Client;
-use aws_sdk_s3::model::{BucketLocationConstraint, CreateBucketConfiguration};
 
 use spider::configuration::Configuration;
 use spider::reqwest;
 use spider::website::Website;
 
-async fn create_s3_bucket(s3_client: &S3Client, bucket_name: &str, region: &str) -> Result<(), Box<dyn std::error::Error>> {
+async fn create_s3_bucket(
+    s3_client: &S3Client,
+    bucket_name: &str,
+    region: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
     let constraint = BucketLocationConstraint::from(region);
     let cfg = CreateBucketConfiguration::builder()
         .location_constraint(constraint)
@@ -32,9 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         panic!("Provide a URL to crawl, bucket name, and region");
     }
 
-    let url = &args[1];
-    let bucket_name = &args[2];
-    let region = &args[3];
+    let (url, bucket_name, region) = (&args[1], &args[2], &args[3]);
 
     let mut config = Configuration::new();
     if let Some(blacklist_url) = config.blacklist_url.as_mut() {
@@ -64,7 +66,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let key = format!("{}{}", url, link.as_ref());
         println!("Uploading crawled data: {}", key);
         let byte_stream = ByteStream::from(body);
-        let put_request = s3_client.put_object()
+        let put_request = s3_client
+            .put_object()
             .bucket(&*bucket_name.trim())
             .key(&key)
             .body(byte_stream);
