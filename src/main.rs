@@ -56,16 +56,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Creating S3 bucket '{}'", bucket_name);
     let sdk_config = load_from_env().await;
     let s3_client = S3Client::new(&sdk_config);
-    create_s3_bucket(&s3_client, bucket_name, region).await?;
+    // create_s3_bucket(&s3_client, bucket_name, region).await?;
+
+    website.crawl().await;
 
     for link in website.get_links() {
-        println!("- {:?}", link.as_ref());
+        println!("Visiting link: {}", link.as_ref());
         let response = reqwest::get(link.as_ref()).await?;
-        let body = response.bytes().await?.to_vec();
-
-        let key = format!("{}{}", url, link.as_ref());
-        println!("Uploading crawled data: {}", key);
+        let body = response.bytes().await?;
         let byte_stream = ByteStream::from(body);
+        println!("Link content:\n{:?}\n", byte_stream);
+
+        let key = format!("{}-{}", url, link.as_ref());
+        println!("Uploading crawled data with key: {}", key);
         let put_request = s3_client
             .put_object()
             .bucket(&*bucket_name.trim())
