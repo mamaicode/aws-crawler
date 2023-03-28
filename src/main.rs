@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Creating S3 bucket '{}'", bucket_name);
     let sdk_config = load_from_env().await;
     let s3_client = S3Client::new(&sdk_config);
-    // create_s3_bucket(&s3_client, bucket_name, region).await?;
+    create_s3_bucket(&s3_client, bucket_name, region).await?;
 
     website.crawl().await;
 
@@ -71,7 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("Uploading crawled data with key: {}", key);
         let put_request = s3_client
             .put_object()
-            .bucket(&*bucket_name.trim())
+            .bucket(bucket_name.trim())
             .key(&key)
             .body(byte_stream);
         put_request.send().await?;
